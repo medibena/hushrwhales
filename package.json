@@ -2,7 +2,7 @@
   "name": "vite-react-typescript-starter",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://nazarproton.github.io/hushr",
+  "homepage": "https://medibena.github.io/hushrwhales",
   "type": "module",
   "scripts": {
     "dev": "vite",
