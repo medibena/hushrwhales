@@ -48,6 +48,13 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
       lastMessage: '0.1 ETH per NFT',
       isActive: selectedChatId === 'chat-4',
     },
+    {
+      id: 'chat-5',
+      name: 'Crypto Whales',
+      wallet_address: '0xWhales...Group',
+      lastMessage: 'The real OGs know about private routes',
+      isActive: selectedChatId === 'chat-5',
+    },
   ];
 
   const handleChatClick = (chatId: string) => {

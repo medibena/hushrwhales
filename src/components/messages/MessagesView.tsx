@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { useWhaleChat } from '../../hooks/useWhaleChat';
 import { getAvatarForUser } from '../../lib/avatars';
 import { getAssetPath } from '../../lib/paths';
 import {
@@ -21,6 +22,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
   selectedChatId: propSelectedChatId,
 }) => {
   const { walletAddress } = useAuth();
+  const { generateWhaleResponse } = useWhaleChat();
   const [newMessage, setNewMessage] = useState('');
   const [selectedChatId, setSelectedChatId] = useState(
     propSelectedChatId || 'chat-1'
@@ -86,7 +88,76 @@ const MessagesView: React.FC<MessagesViewProps> = ({
     setSelectedImage(null);
   };
 
-  const generateAutoResponse = () => {
+  const generateAutoResponse = (userMessage: string) => {
+    // Check if we're in the whale chat
+    if (selectedChatId === 'chat-5') {
+      // Check if message mentions private tx features
+      const isPrivateTxMessage = userMessage.toLowerCase().includes('private tx') || 
+                                 userMessage.toLowerCase().includes('hushr') || 
+                                 userMessage.toLowerCase().includes('0.2 eth') ||
+                                 userMessage.toLowerCase().includes('private transaction');
+      
+      if (isPrivateTxMessage) {
+        // Generate 4-5 sequential whale responses with 1-second delays
+        const numberOfResponses = 4 + Math.floor(Math.random() * 2); // 4-5 responses
+        
+        for (let i = 0; i < numberOfResponses; i++) {
+          setTimeout(() => {
+            const whaleResponse = generateWhaleResponse(selectedChatId, userMessage);
+            if (whaleResponse) {
+              setChats((prevChats) =>
+                prevChats.map((chat) =>
+                  chat.id === selectedChatId
+                    ? {
+                        ...chat,
+                        messages: [...chat.messages, whaleResponse],
+                        lastMessage: whaleResponse.content,
+                      }
+                    : chat
+                )
+              );
+            }
+          }, (i + 1) * 1000); // 1-second delay between each response
+        }
+      } else {
+        // For non-private tx messages, generate 1-2 casual responses
+        const whaleResponse1 = generateWhaleResponse(selectedChatId, userMessage);
+        const whaleResponse2 = generateWhaleResponse(selectedChatId, userMessage);
+        
+        if (whaleResponse1) {
+          setChats((prevChats) =>
+            prevChats.map((chat) =>
+              chat.id === selectedChatId
+                ? {
+                    ...chat,
+                    messages: [...chat.messages, whaleResponse1],
+                    lastMessage: whaleResponse1.content,
+                  }
+                : chat
+            )
+          );
+
+          if (whaleResponse2 && Math.random() > 0.5) {
+            setTimeout(() => {
+              setChats((prevChats) =>
+                prevChats.map((chat) =>
+                  chat.id === selectedChatId
+                    ? {
+                        ...chat,
+                        messages: [...chat.messages, whaleResponse2],
+                        lastMessage: whaleResponse2.content,
+                      }
+                    : chat
+                )
+              );
+            }, 1500 + Math.random() * 1000);
+          }
+        }
+      }
+      return;
+    }
+
+    // Original logic for other chats
     const availableUsers = mockUsers.filter(
       (user) => user.id !== 'current-user'
     );
@@ -195,7 +266,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
         )
       );
 
-      generateAutoResponse();
+      generateAutoResponse(newMessage);
     }, 1000 + Math.random() * 2000);
 
     onNotificationChange(false);
@@ -287,7 +358,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
                           )}...${(message.sender?.wallet_address || '').slice(
                             -4
                           )}`
-                        : message.sender?.wallet_address}
+                        : message.sender?.display_name || message.sender?.wallet_address}
                     </span>
                   </div>
 
